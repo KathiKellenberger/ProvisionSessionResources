@@ -1,0 +1,33 @@
+Function CreateImage {
+Param (
+    [string]$ServerUrl,
+    [string]$TempMachineName, [string]$TempInstanceName,
+    [string]$fileshare,
+    [string]$imageName,
+    [string]$DatabaseName,
+    [string]$MaskingSetPath
+)
+    Connect-SqlClone -ServerUrl $ServerUrl
+    $imageSqlServerConnection = Get-SqlCloneSqlServerInstance `
+         -MachineName $TempMachineName -InstanceName $TempInstanceName
+    $cloneSqlServerConnection = Get-SqlCloneSqlServerInstance `
+         -MachineName $DestMachineName -InstanceName $DestInstanceName
+    $imageDesgination = Get-SqlCloneImageLocation -Path $fileshare 
+    $MaskingSet = New-SqlCloneMask -Path $MaskingSetPath
+    New-SqlCloneImage -Name $ImageName `
+        -SqlServerInstance $imageSqlServerConnection `
+        -DatabaseName $DatabaseName `
+        -Destination $imageDesgination  `
+        -Modifications $MaskingSet | Wait-SqlCloneOperation 
+	
+
+
+  
+}
+CreateImage -ServerUrl 'http://redgate-demo:14145/' `
+     -TempMachineName 'redgate-demo' `
+     -TempInstanceName 'sqlexpress' `
+     -ImageName 'Eastwind' `
+     -fileshare 'C:\fileshare' `
+     -DatabaseName 'Eastwind' `
+     -MaskingSetPath 'C:\Users\redgate\Documents\MaskingSets\EastwindFullMask.DMSMaskSet'
